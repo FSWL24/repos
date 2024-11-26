@@ -1,6 +1,0 @@
-@MarketData.DataPointsDictionary_HostAddress = http://localhost:5094
-
-GET {{MarketData.DataPointsDictionary_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
