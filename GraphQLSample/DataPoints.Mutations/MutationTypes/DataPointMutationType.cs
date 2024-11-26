@@ -2,21 +2,17 @@
 
 namespace DataPoints.Mutations.MutationTypes
 {
+    
     public class DataPointMutationType
     {
-        private readonly IDataPointsDictionaryService _service;
+       
 
-        public DataPointMutationType(IDataPointsDictionaryService service)
-        {
-            _service = service;
-        }
-
-        public async Task UpsertDataPointAsync(DataPointDictionaryInput input)
+        public async Task UpsertDataPointAsync(DataPointDictionaryInput input, [Service] IDataPointsDictionaryService _service)
         {
             await _service.AddOrUpdateAsync(input);
         }
 
-        public async Task<bool> DeleteDataPointAsync(DataPointDictionaryInput input)
+        public async Task<bool> DeleteDataPointAsync(DataPointDictionaryInput input, [Service] IDataPointsDictionaryService _service)
         {
             var dataPoint = await _service.GetAsync(input);
             if (dataPoint == null)
