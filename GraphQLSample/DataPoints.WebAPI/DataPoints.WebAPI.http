@@ -1,0 +1,6 @@
+@DataPoints.WebAPI_HostAddress = http://localhost:5189
+
+GET {{DataPoints.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
