@@ -2,7 +2,7 @@
 
 namespace DataPoints.Types.OutputTypes
 {
-    public class DataPointDictionaryOutput : DataPointsDictionary
+    public class DataPointDictionaryOutput : DataPointDictionary
     {
     }
 }

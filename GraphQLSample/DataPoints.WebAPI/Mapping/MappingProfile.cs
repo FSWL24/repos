@@ -8,7 +8,7 @@ namespace DataPoints.WebAPI.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<DataPointsDictionary, DataPointDictionaryOutput>();
+            CreateMap<DataPointDictionary, DataPointDictionaryOutput>();
         }
     }
 }

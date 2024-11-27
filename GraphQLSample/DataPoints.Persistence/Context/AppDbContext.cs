@@ -5,7 +5,7 @@ namespace DataPoints.Persistence.Context
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<DataPointsDictionary> Dictionary { get; set; }
+        public DbSet<DataPointDictionary> Dictionary { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -14,7 +14,7 @@ namespace DataPoints.Persistence.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<DataPointsDictionary>(entity =>
+            modelBuilder.Entity<DataPointDictionary>(entity =>
             {
                 entity.ToTable("Dictionary");
                 entity.HasKey(e => e.Id);
@@ -53,6 +53,29 @@ namespace DataPoints.Persistence.Context
                 entity.Property(e => e.JiraEngineeringTicket).HasColumnName("JiraEngineeringTicket").HasMaxLength(512);
                 entity.Property(e => e.LoadingCalcNeitherBoth).HasColumnName("LoadingCalcNeitherBoth").HasMaxLength(512);
             });
+        }
+        public override int SaveChanges()
+        {
+            TrackChanges();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            TrackChanges();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        public static event Action<object, EntityState>? EntityChanged;
+
+        private void TrackChanges()
+        {
+            var modifiedEntries = ChangeTracker.Entries<DataPointDictionary>()
+                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added);
+
+            foreach (var entry in modifiedEntries)
+            {
+                EntityChanged?.Invoke(entry.Entity, entry.State);
+            }
         }
     }
 }

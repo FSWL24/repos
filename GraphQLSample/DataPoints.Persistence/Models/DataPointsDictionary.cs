@@ -1,6 +1,6 @@
 ﻿namespace DataPoints.Persistence.Models
 {
-    public class DataPointsDictionary
+    public class DataPointDictionary
     {
         public int Id { get; set; }
         public int? MSItemId { get; set; }

@@ -1,5 +1,8 @@
-﻿using DataPoints.Persistence.Service.Common;
-using System.Reflection;
+﻿using DataPoints.Mutations.Extensions;
+using DataPoints.Persistence.Context;
+using DataPoints.Persistence.Extensions;
+using DataPoints.Persistence.Service.Common;
+using HotChocolate.Subscriptions;
 
 using Varasto.EntityFrameworkIBD.Utilities;
 
@@ -7,13 +10,25 @@ namespace DataPoints.Persistence.Services.Common
 {
     public class GenericService<TEntity> : IGenericService<TEntity> where TEntity : class
     {
+        private readonly ITopicEventSender _eventSender;
+
         IGenericRepository<TEntity> _repository;
         private readonly int MAXBATCHSIZE = 500;
 
-        public GenericService(IGenericRepository<TEntity> repository)
+        public GenericService(IGenericRepository<TEntity> repository, ITopicEventSender topicEventSender)
         {
             _repository = repository;
+            _eventSender = topicEventSender;
+            AppDbContext.EntityChanged += async (entity, state) =>
+            {
+                if (entity != null)
+                { 
+                    var topic = entity.GetTopicName(state);
+                    await _eventSender.SendAsync(topic, entity);
+                }
+            };
         }
+        
 
         #region ADD/UPDATE Methods
         public async Task AddOrUpdateAsync(TEntity entity)
@@ -21,7 +36,8 @@ namespace DataPoints.Persistence.Services.Common
             var existingEntity = await GetAsync(entity);
             if (existingEntity != null)
             {
-                await _repository.UpdateAsync(entity);
+                existingEntity.UpdateWithInput(entity);
+                await _repository.UpdateAsync(existingEntity);
             }
             else
             {
@@ -41,19 +57,19 @@ namespace DataPoints.Persistence.Services.Common
                 var batch = entities.GetRange(offset, step);
 
                 // Get key values from the batch of entities
-                var keyValuesList = batch.Select(entity => GetKeyValues(entity)).ToList();
+                var keyValuesList = batch.Select(entity => entity.GetKeyValues(_repository)).ToList();
 
                 // Fetch all existing entities in a single query using the primary keys 
                 var existingEntities = await _repository.GetAsync(keyValuesList);
 
                 // Create a lookup dictionary
                 var entityLookup = existingEntities.ToDictionary(
-                    entity => GetKeyValues(entity)
+                    entity => entity.GetKeyValues(_repository)
                     , entity => entity
                     , new ObjectArrayEqualityComparer());
                 foreach (var entity in batch)
                 {
-                    var keyValues = GetKeyValues(entity);
+                    var keyValues = entity.GetKeyValues(_repository);
                     if (entityLookup.TryGetValue(keyValues, out var existingEntity))
                     {
                         entitiesForUpdate.Add(existingEntity);
@@ -96,20 +112,20 @@ namespace DataPoints.Persistence.Services.Common
                 var batch = entities.GetRange(offset, step);
 
                 // Get key values from the batch of entities
-                var keyValuesList = batch.Select(entity => GetKeyValues(entity)).ToList();
+                var keyValuesList = batch.Select(entity => entity.GetKeyValues(_repository)).ToList();
 
                 // Fetch all existing entities in a single query using the primary keys 
                 var existingEntities = await _repository.GetAsync(keyValuesList);
 
                 // Create a lookup dictionary
                 var entityLookup = existingEntities.ToDictionary(
-                    entity => GetKeyValues(entity)
+                    entity => entity.GetKeyValues(_repository)
                     , entity => entity
                     , new ObjectArrayEqualityComparer());
 
                 foreach (var entity in batch)
                 {
-                    var keyValues = GetKeyValues(entity);
+                    var keyValues = entity.GetKeyValues(_repository);
                     if (entityLookup.TryGetValue(keyValues, out var existingEntity))
                     {
                         entitiesForDelete.Add(existingEntity);
@@ -126,32 +142,15 @@ namespace DataPoints.Persistence.Services.Common
             return await _repository.GetAllAsync();
         }
 
-        public async Task<TEntity> GetAsync(TEntity entity)
+        public async Task<TEntity> GetAsync(TEntity entity) 
         {
-            var keyValues = GetKeyValues(entity);
+            var keyValues = entity.GetKeyValues(_repository);
             return await _repository.GetAsync(keyValues);
         }
         #endregion
 
         #region Private Methods
-        private object[] GetKeyValues<T>(T model)
-        {
-            var propertiesName = _repository.GetKeys<TEntity>();
-            List<object> values = new List<object>();
-            foreach (var propertyName in propertiesName)
-            {
-                PropertyInfo property = model.GetType().GetProperty(propertyName);
-                if (property != null)
-                {
-                    var value = property.GetValue(model, null);
-                    if (value != null)
-                    {
-                        values.Add(value);
-                    }
-                }
-            }
-            return values.ToArray();
-        }
+        
 
         private void CalculateBatchSize(ref int? batchSize)
         {
