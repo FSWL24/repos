@@ -9,6 +9,7 @@ namespace DataPoints.Mutations.Extensions
         public static IRequestExecutorBuilder AddMutationTypes(this IRequestExecutorBuilder builder)
         {
             builder.AddMutationType<DataPointMutationType>();
+            
             return builder;
         }
     }

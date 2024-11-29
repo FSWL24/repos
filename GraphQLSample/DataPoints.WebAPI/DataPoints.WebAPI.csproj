@@ -13,6 +13,7 @@
     <PackageReference Include="HotChocolate.AspNetCore.Subscriptions" Version="10.5.5" />
     <PackageReference Include="HotChocolate.Data" Version="14.1.0" />
     <PackageReference Include="HotChocolate.Diagnostics" Version="14.1.0" />
+    <PackageReference Include="HotChocolate.Transport.Sockets" Version="14.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 

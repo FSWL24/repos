@@ -1,0 +1,52 @@
+/* DataPointTable.css - Add/update these styles */
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* Enables horizontal scroll */
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .data-table {
+    width: 100%;
+    min-width: 1200px; /* Minimum width to prevent column squishing */
+    table-layout: fixed; /* Fixed table layout */
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap; /* Prevents text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Shows ... for overflowing text */
+  }
+  
+  /* Define fixed widths for each column */
+  .data-table th:nth-child(1),
+  .data-table td:nth-child(1) { /* ID column */
+    width: 80px;
+  }
+  
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2) { /* DisplayName column */
+    width: 150px;
+  }
+  
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3) { /* Description column */
+    width: 200px;
+  }
+  
+  /* Add similar width definitions for other columns */
+  
+  @media screen and (max-width: 768px) {
+    .table-container {
+      margin: 0 -20px; /* Negative margin to allow full-width scroll */
+      padding: 20px;
+    }
+  }

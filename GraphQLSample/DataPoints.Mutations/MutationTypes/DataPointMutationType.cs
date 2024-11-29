@@ -9,7 +9,9 @@ namespace DataPoints.Mutations.MutationTypes
     
     public class DataPointMutationType
     {
-        public async Task<DataPointDictionaryOutput> UpsertDataPointAsync(DataPointDictionaryInput input, [Service] IDataPointsDictionaryService _service, [Service] IMapper mapper, [Service] ITopicEventSender sender)
+        public async Task<DataPointDictionaryOutput> UpsertDataPointAsync(DataPointDictionaryInput input, 
+            [Service] IDataPointsDictionaryService _service, 
+            [Service] IMapper mapper, [Service] ITopicEventSender sender)
         {
             await _service.AddOrUpdateAsync(input);
             var dataPoint = input as DataPointDictionary;
